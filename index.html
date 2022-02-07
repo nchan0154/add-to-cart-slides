@@ -1,0 +1,516 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Developing an Accessible ‘Add To Cart’ Flow</title></title>
+
+	<link href="https://fonts.googleapis.com/css?family=Lato:400,700|Playfair+Display:400,700&amp;display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="plugin/accessibility/helper.css">
+	<link rel="stylesheet" href="dist/custom.css">
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/custom.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<section>
+<h1>Developing an Accessible ‘Add To Cart’ Flow</h1>
+<p>
+	By <a href="https://nicchan.me/">Nic Chan</a>
+</p>
+</section>
+
+<section>
+<h2>A small introduction</h2>
+<ul>
+	<li>Freelance front-end developer</li>
+	<li>Worked on Shopify stores</li>
+	<li>Definitely a cat person</li>
+</ul>
+</section>
+
+<section>
+<h2>Talk format</h2>
+<ul>
+<li>4 Patterns:
+	<ul>
+		<li>Buttons</li>
+		<li>Inline Notifications</li>
+		<li>Toasts</li>
+		<li>Dialogs</li>
+	</ul>
+</li>
+<li>Different iterations, advantages and pitfalls</li>
+<li>Tips and tricks</li>
+</ul>
+</section>
+
+<section>
+<h2>A typical product page</h2>
+<img src="screenshots/product-page.png" alt="Wireframe of a typical product page. There are breadcrumbs on top, a series of images with thumbnails to the left, and a product title, price, purchase form and description on the right">
+<aside class="notes">
+	<ul>
+		<li>So right here we have a fairly standard product page, most folks will have seen some variation of this.</li>
+		<li>Lots of things to comment on in regards to accessibility, but for now we will be focusing on what happens after you hit that "Add To Cart" button</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>HTML forms, all the way down</h2>
+<ol>
+	<li>Progressive Enhancement</li>
+	<li>Semantics</li>
+<ol>
+<div class="columns columns--half">
+<div>
+	<img src="screenshots/form.png" alt="Wireframe of a product form, there is a fieldset for 'Color' with two options, 'Red' or 'Blue', and an 'Add to cart' button">
+</div>
+<div>
+<pre class="html">
+<code><form method="post" action="/cart/add">
+<!-- Fieldset with options goes here-->
+<button type="submit">
+Add to Cart
+</button>
+</form>
+</code>
+</pre>
+</div>
+</div>
+<aside class="notes">
+	<ul>
+		<li>Common misconception that screen readers cannot use JavaScript</li>
+		<li>Why we would use the proper element is for two reasons:<ol>
+			<li>Progressive enhancement</li>
+			<li>Semantics. Assistive technologies offer the functionality to jump to things like form elements</li></ol>
+		<li>What happens with this default example? Redirected to a cart.</li>
+		<li>This solves a whole bunch of issues for us, navigating to a new page is a fundemental interaction of the web</li>
+		<li>So if this approach is so robust, why would people use alternative?</li>
+		<li>Merchants realized that this was pushing users to checkout too soon and forcing them into a single flow,
+		so these patterns were used to notify users and offer them the choice of whether to continue shopping or proceed to checkout
+		<li>Now we're all on the same page, let's move into the patterns.</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>The 'button' pattern</h2>
+<img src="screenshots/buttons-1.png" alt="Two buttons, the first one says 'Add to cart' and the second one says 'Added to cart' with a checkmark next to it.">
+<aside class="notes">
+	<ul>
+		<li>When a button's text is changed when it is activated.</li>
+		<li>A pattern that can be used in combination with other patterns, and I'd recommend it</li>
+</aside>
+</section>
+
+<section>
+<h2>Good for zoom users!</h2>
+<img src="screenshots/zoom-1.png" alt="Zoomtext being used on the product page, only the form and a bit of the description are visible.">
+<aside class="notes">
+	<ul>
+		<li>Good for users who use magnification, whether it be the default browser zoom, or special zooming software.</li>
+		<li>Can only see a very small region of the screen, so it's good to have some indication of the state in the place they're currently looking at</li>
+</aside>
+</section>
+
+<section>
+<h2>ZoomText centered on a button</h2>
+<img src="screenshots/zoom-2.png" alt="Zoomtext on the product page, the Add to Cart button now says 'Adding'.">
+<aside class="notes">
+</aside>
+</section>
+
+<section>
+<h2>We can't rely on just changing the text of our button</h2>
+<pre class="html nope">
+<code>
+	<form method="post" action="/cart/add">
+		<button type="submit">
+			Adding...
+		</button>
+	</form>
+
+</code>
+</pre>
+<pre class="js">
+<code>
+	addToCart(item).then(() => {
+		const addToCart = document.getElementById('add-to-cart');
+		liveRegion.innerText = 'Adding...'
+	})
+
+</code>
+</pre>
+<aside class="notes">
+	<ul>
+		<li>Moving onto implementation details, these buttons are typically implemented by using JS to change the text.</li>
+		<li>Screen readers handle changes the text of things inconsistently</li>
+</aside>
+</section>
+
+<section>
+<h2>Live regions with buttons</h2>
+<pre class="html">
+<code>
+	<form method="post" action="/cart/add">
+		<button type="submit">
+			Adding...
+		</button>
+	</form>
+	<div aria-live="polite" id="live-region">
+		Adding...
+	</div>
+
+</code>
+</pre>
+<pre class="js">
+<code>
+	addToCart(item).then(() => {
+		const liveRegion = document.getElementById('live-region');
+		const addToCart = document.getElementById('add-to-cart');
+		liveRegion.innerText = 'Adding...'
+		addToCart.innerText = 'Adding...'
+	})
+
+</code>
+</pre>
+<aside class="notes">
+	<ul>
+		<li>If this is your only indication of state, you'll definitely want to be using live regions.</li>
+		<li>Live regions are a way to announce changes in your site to assistive technology users. Text-only announcements.</li>
+		<li>Live regions can be created by adding the aria-live attribute, with a value of either polite or assertive.</li>
+		<li>Live regions work most consistently when already present in the DOM. You don't want to be adding them dynamically. Update the text, and clear it out when appropriate.</li>
+</aside>
+</section>
+
+<section>
+<h2><code>disabled</code> or <code>aria-disabled</code>?</h2>
+<pre class="html">
+<code>
+	<button type="submit" disabled>
+		Adding...
+	</button>
+	<!-- or -->
+	<button type="submit" aria-disabled="true">
+		Adding...
+	</button>
+
+</code>
+</pre>
+<aside class="notes">
+	<ul>
+		<li>Sometimes, developers add the disabled attribute when the action is being processed to prevent double submission</li>
+		<li>This is definitely a case where the phrase 'it depends!' is very relevant</li>
+		<li>disabled may cause the focus to be lost</li>
+		<li>aria-disabled may not be any better, as what can be announced to screen readers will usually be something like 'Add To Cart, Unavailable',which can be confusing in an e-commerce context </li>
+		<li>Consider your userbase, if your website is selling to a technical audience, your audience may have a higher level of tech proficiency and won't be phased by the 'Unavailable' announcement</li>
+		<li>Consider testing with users whether or not a disabled attribute is needed, or if you should just disable click with JS</li>
+</aside>
+</section>
+
+<section>
+<h2>Consider your wording</h2>
+<div class="columns columns--half">
+	<div>
+		<img src="screenshots/buttons-2.png" alt="Button with text changing from 'Add To Cart' to 'Adding...' and then back to the original 'Add to Cart'">
+	</div>
+	<div>
+		<img src="screenshots/buttons-3.png" alt="Button with text changing from 'Add To Cart' to 'Adding' to 'Added to Cart' with a checkmark next to it.">
+	</div>
+</div>
+<aside class="notes">
+	<ul>
+		<li>Just using this pattern in isolation can cause issues</li>
+		<li>On the left, we have Add To Cart -> Adding... -> Add To Cart: Can be confusing if they are the only indication of state, as it requires the user to be actively paying attention to what may be a small difference</li>
+		<li>On the right, we have Add to Cart -> Adding -> Added to Cart: Poses different problem of if you want to reset the button to the original state, there is room for confusion about what this button does now</li>
+		<li>The wording issues can be mitigated by using this pattern in combination with other a future pattern, such as the next pattern.</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>Inline Notifications</h2>
+<img src="screenshots/inline-1.png" alt="Product form with a notification that says 'A Delightful Product has been added to your cart' below the 'Add to Cart' button">
+<aside class="notes">
+	<ul>
+		<li>So, what do I mean when I refer to the Inline pattern?</li>
+		<li>not sticky/position absolute, the message is inserted into the reading area. content is often shifted in order to create space for this notification. [explain image]</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>Should we use live regions for inline notifications?</h2>
+<pre class="html">
+<code>
+	<div id="notification" tabindex="-1">
+		A Delightful Product has been added to your cart
+	</div>
+
+</code>
+</pre>
+<pre class="js">
+<code>
+	addToCart(item).then(() => {
+		const notification =
+			document.getElementById('notification');
+		notification.innerText =
+			`${item.title} has been added to your cart`
+		notification.focus();
+	})
+
+</code>
+</pre>
+<aside class="notes">
+	<ul>
+		<li>We've already discussed the idea of live regions as a way of presenting content to AT, so should we also be using them here?</li>
+		<li>Live regions can be thought of as temporary notifications. They're the web equivalent of an announcement blaring at you over the loudspeaker. If they're not in a logical place, like how I've placed it right under the Add to cart button, it may not be obvious where in the DOM they are, and screen reader users have no option to go back and listen to that text again.</li>
+		<li> Zoom magnification users who don't use accompanying audio could be left out and miss this notification entirely.</li>
+		<li> We can consider programmatically moving the focus to the notification once it is enters the DOM, and this will be announced to screen reader users and other groups</li>
+	</ul>
+</aside>
+</section>
+
+
+<section>
+<h2>Interactive Child Elements</h2>
+<img src="screenshots/inline-4.png" alt="Product form with an inline notification: 'A Delightful Product has been added to your cart.' Below the paragraph text, there are two links for 'Continue shopping' and 'View cart.'">
+<aside class="notes">
+	<ul>
+		<li>Sometimes our notification isn't just text, but also includes interactive elements. [explain].</li>
+		<li>In these situations, we have to move the focus to the element, because aria-live regions strip semantics of child elements</li>
+		<li>Screen reader users might be able to tell these are actions from the words<li>
+		<li>Some implementations will have this notification disappear after a short period of time. While this is already not adviseable due to being easily missable,</li>
+		<li>2.2.1 Timing adjustable criterion. Essentially, these criterion exist to make sure we are allowing people adequate time to complete interactions. Because we are providing different interactions within the notification, hiding the notifications automatically can prevent users from completing those interactions</li>
+		<li>A way around this would be to add a button to dismiss the notification manually instead.</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>Placement Options</h2>
+<div class="columns columns--half">
+	<div>
+		<img src="screenshots/inline-2.png" alt="Product page with an inline notification above the images and product form, below the breadcrumbs">
+	</div>
+	<div>
+		<img src="screenshots/inline-3.png" alt="Product page with an inline notification above the add to cart button. ">
+	</div>
+</div>
+<aside class="notes">
+	<ul>
+		<li>In the wild, I often see different placement options for this pattern. [explain images]</li>
+		<li>I'd argue that the best placement for the notification is after the add to cart button</li>
+		<li>If we're moving focus, technically we meet requirements either way, but we can really improve usability by not taking users too far out of the context they were originally in</li>
+		<li>Placing it near the button helps to minimize tab stops for keyboard users, and not disorient with dramatic content shifts</li>
+		<li>
+	</ul>
+</aside>
+</section>
+
+
+<section>
+<h2>A word of warning about toasts</h2>
+<p>Toasts and dialogs are fundamentally different</p>
+<aside class="notes">
+	<ul>
+		<li>The next two patterns I will be discussing are toasts and dialogs</li>
+		<li>Before I get into the details, i'd like to emphasize that these patterns can often lack distinctions in the wild.</li>
+		<li>I will describe behaviors of both dialogs and toasts in terms of how they should behave, but the lines are blurred.</li>
+		<li>because they both pop up on the screen and overlay content, people tend to see a toast as just a smaller dialog, code them in a very similar way.</li>
+		<li>this ignore distinctions in semantics and requirements for each of these to be accessible.</li>
+		<li>A lot of accessibility errors come about from developers treating these two components as interchangeable.</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>An introduction to toasts</h2>
+<img src="screenshots/toast-1.png" alt="The same product page, the 'A Delightful Product has been added to your cart' now shows up in a toast message on the upper right.">
+<aside class="notes">
+	<ul>
+		<li>toast is named after the behavior of a toaster.</li>
+		<li>Element that pops up in a fixed position on the screen, typically in the top right, bottom right, under the nav, etc.</li>
+		<li><code>role="status"</code> or <code>aria-live</code></li>
+		<li>focus typically isn't moved to them</li>
+		<li>Contrary to how toasters work in real life, toasts on the web often disappear after a few seconds.</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>Should we be using toasts?</h2>
+<div class="nope">
+ <img src="screenshots/toast-2.gif" alt="The same product page with a toast, except the toast disappears automatically after a second or so.">
+</div>
+<aside class="notes">
+	<ul>
+		<li>A lot of the problems with toasts stem from the fact that by definition, focus isn't moved to it.<li>
+		<li>Furthermore, toasts inherently have a problem shared with a lot of fixed position elements - Missable by zoom users.</li>
+		<li>Early on, we discussed 2.2.1 timing adjustable criterion and the problem with child elements, and this applies here. Trying to interact with a notification that disappears is as frustrating as your toast vanishing off your plate while you try to eat it.</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>Toast solutions</h2>
+<div class="columns columns--half">
+	<div>
+		<img src="screenshots/settings.png" alt="Example of a notification drawer, with a heading of Your Notifications and a list of previous notifications with a timestamap">
+	</div>
+	<div>
+		<img src="screenshots/notification-drawer.png" alt="Example of a settings pageg, where you can select the notification timing">
+	</div>
+</div>
+<aside class="notes">
+	<ul>
+		<li>how do we make sure we don't fail the 2.2.1 criterion while keeping the toast behavior? custom timings, toast drawer, which looks like notifications on phone, but this kind of defeats the original point. No one wants a drawer full of stale toasts.</li>
+		<li>Unfortunately, I think that toasts don't really live up to their namesake and are not as useful or delicious as their real-world counterparts. especially in an e-commerce setting where the add to cart is the primary action. What developers often try to as implement as toasts should really be dialogs instead, which leads us to our next section</li>
+	</ul>
+</aside>
+</section>
+
+
+<section>
+<h2>Dialogs!</h2>
+<img src="screenshots/dialog-og.gif" alt="A Windows 98 style dialog showing the results of a registry scan. 'The system has been backed up already today, would you like to back it up again?' 'Yes' or 'No'">
+<aside class="notes">
+	<ul>
+		<li>An often misunderstood component. Misconception that all dialogs are basically what we understand to be an alert.</li>
+		<li>All of the following patterns are examples of things I regularly see on online stores. While visually they look different, they all can be considered dialogs, and can use similar semantics and functionality under the visual styling.</li>
+</aside>
+</section>
+
+<section>
+<h2>This is a dialog</h2>
+<img src="screenshots/modal-1.png" alt="Product page with a notification in the top right, similar to the toast example, except there is now an X button.">
+<aside class="notes">
+</aside>
+</section>
+
+<section>
+<h2>This is also a dialog</h2>
+<img src="screenshots/modal-2.png" alt="Product page with a modal in the middle of the page, alerting the user that an item has been added to the cart and offering the choice between 'View cart' and 'Continue Shoping'. The bacakground is partially obscured by a white overlay.">
+<aside class="notes">
+</aside>
+</section>
+
+<section>
+<h2>This too!</h2>
+<img src="screenshots/modal-3.png" alt="Product page with a minicart dropping down from the header, which shows our just added product, a total price, and a button to proceed to checkout.">
+<aside class="notes">
+</aside>
+</section>
+
+<section>
+<h2>Even this a dialog</h2>
+<img src="screenshots/modal-4.png" alt="Product page with a cart drawer on the right, with an overlay obscuring the product content.">
+<aside class="notes">
+	<ul>
+		<li>The primary difference between these different dialogs is modal and non-modal</li>
+		<li>Non modal dialogs don't prevent interactations between the rest of the page when open. </li>
+		<li>So if you have a backdrop behind your dialog, that probably would suggest that it is a modal and it should be built in a modal way.</li>
+		<li>Now we know that all these seemingly different patterns are actually just dialogs under the hood, I'm going to give you some advice on implementation details</li>
+		<li>If web dev were a video game, dialogs would be the final boss. I'm not going to go into all the intricacies of building an accessible dialog because it is super complex, but here are a few</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>Focus Management</h2>
+<ul>
+	<li>Move focus to the dialog</li>
+	<li>If modal, trap focus, but also allow focus to move to browser UI elements</li>
+	<li>Return focus to the element that opened the dialog</li>
+</ul>
+<aside class="notes">
+	<ul>
+		<li>The frequently cited phrase 'It depends' is very relevent here! Whether your dialog is modal or non-modal, you will want to move focus to it</li>
+		<li>If your dialog is modal, you will want to trap focus, which means that you shouldn't be able to focus the document in the background. Hitting tab a bunch of times should cycle between the elements in the modal, and then shift to the browser UI</li>
+		<li>Focus should return to the element that triggered the dialog, so in this case, it's our friend the Add to Cart button, but if you've opted for a minicart that can be opened through a cart button in the header, you'll need to account for handling different modal triggers.</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>Keyboard</h2>
+<ul>
+	<li>Don't forget keyboard shortcuts! Hitting the escape key should close the dialog.</li>
+	<li>Screen reader users shouldn't be able to escape the modal through other keyboard means. In this future, <code>aria-modal="true"</code> should have more support, but <code>inert</code> works for now</li>
+	<li>Don't dismiss dialogs automatically</li>
+</ul>
+<aside class="notes">
+	<ul>
+		<li>Keyboard shortcuts. Escape key should close it.</li>
+		<li>If modal, Making sure AT users can't escape from the modal via other means. aria-modal="true" is a great way to do this, presently not too well supported. `Inert`+ polyfill. We often talk about focus trapping, but what can end up is happening that the focus is trapped in the modal, but screen reader users can exit the modal with the arrow keys or other forms of navigation</li>
+		<li>Don't dismiss dialogs automatically</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>Which element to use?</h2>
+<ul>
+	<li><code>&lt;dialog&gt;</code> is not quite there yet, but almost!</li>
+	<li><code>&lt;div&gt;</code> with <code>role="dialog"</code></li>
+</ul>
+<aside class="notes">
+	<ul>
+		<li></li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>Label ALL the things!</h2>
+<ul>
+	<li>Label your dialog - consider <code>aria-labelledby</code></li>
+	<li>If your dialog has repetitive interactive elements (eg. multiple 'Increase Quantity') buttons, make sure they have unique names</li>
+</ul>
+<aside class="notes">
+	<ul>
+		<li>Label your dialog  (Your Shopping Cart,)</li>
+		<li>If your dialog is a modal cart, be sure to make sure that elements that tend to be repetitive don't all have the same name.</li>
+	</ul>
+</aside>
+</section>
+
+<section>
+<h2>Takeaways</h2>
+<ul>
+	<li>No clear winner amongst patterns</li>
+	<li>Testing individual components is important, but testing whole flows is essential</li>
+	<li>toasts and dialogs are NOT the same. Accessibility errors come about from treating different components interchangably.</li>
+</ul>
+</section>
+</div>
+</div>
+
+<script src="dist/reveal.js"></script>
+<script src="plugin/notes/notes.js"></script>
+<script src="plugin/markdown/markdown.js"></script>
+<script src="plugin/highlight/highlight.js"></script>
+<script>
+	// More info about initialization & config:
+	// - https://revealjs.com/initialization/
+	// - https://revealjs.com/config/
+	Reveal.initialize({
+		width: 800,
+		transition: 'fade',
+		hash: true,
+		dependencies: [
+				{ src: 'plugin/accessibility/helper.js', async: true, condition: function() {
+					return !!document.body.classList;
+				}
+		}],
+		plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+	});
+</script>
+</body>
+</html>
