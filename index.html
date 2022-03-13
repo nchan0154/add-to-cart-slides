@@ -21,7 +21,11 @@
 <section>
 <h1>Developing an Accessible ‘Add To Cart’ Flow</h1>
 <p>
-	By <a href="https://nicchan.me/">Nic Chan</a>
+	By Nic Chan<br />
+</p>
+<p>
+	<a href="https://nicchan.me/">www.nicchan.me</a><br />
+	<a href="https://nicchan.me/">@NicMakesStuff</a>
 </p>
 </section>
 
@@ -131,7 +135,7 @@ Add to Cart
 <pre class="html nope">
 <code>
 	<form method="post" action="/cart/add">
-		<button type="submit">
+		<button type="submit" id="add-to-cart">
 			Adding...
 		</button>
 	</form>
@@ -141,8 +145,8 @@ Add to Cart
 <pre class="js">
 <code>
 	addToCart(item).then(() => {
-		const addToCart = document.getElementById('add-to-cart');
-		liveRegion.innerText = 'Adding...'
+		const button = document.getElementById('add-to-cart');
+		button.innerText = 'Adding...'
 	})
 
 </code>
@@ -159,7 +163,7 @@ Add to Cart
 <pre class="html">
 <code>
 	<form method="post" action="/cart/add">
-		<button type="submit">
+		<button type="submit" id="add-to-cart">
 			Adding...
 		</button>
 	</form>
@@ -173,9 +177,9 @@ Add to Cart
 <code>
 	addToCart(item).then(() => {
 		const liveRegion = document.getElementById('live-region');
-		const addToCart = document.getElementById('add-to-cart');
+		const button = document.getElementById('add-to-cart');
 		liveRegion.innerText = 'Adding...'
-		addToCart.innerText = 'Adding...'
+		button.innerText = 'Adding...'
 	})
 
 </code>
@@ -229,7 +233,7 @@ Add to Cart
 		<li>Just using this pattern in isolation can cause issues</li>
 		<li>On the left, we have Add To Cart -> Adding... -> Add To Cart: Can be confusing if they are the only indication of state, as it requires the user to be actively paying attention to what may be a small difference</li>
 		<li>On the right, we have Add to Cart -> Adding -> Added to Cart: Poses different problem of if you want to reset the button to the original state, there is room for confusion about what this button does now</li>
-		<li>The wording issues can be mitigated by using this pattern in combination with other a future pattern, such as the next pattern.</li>
+		<li>The wording issues can be mitigated by using this pattern in combination with other patterns, such as the next pattern.</li>
 	</ul>
 </aside>
 </section>
@@ -285,9 +289,9 @@ Add to Cart
 	<ul>
 		<li>Sometimes our notification isn't just text, but also includes interactive elements. [explain].</li>
 		<li>In these situations, we have to move the focus to the element, because aria-live regions strip semantics of child elements</li>
-		<li>Screen reader users might be able to tell these are actions from the words<li>
+		<li>Screen reader users might be able to tell these are actions from the words</li>
 		<li>Some implementations will have this notification disappear after a short period of time. While this is already not adviseable due to being easily missable,</li>
-		<li>2.2.1 Timing adjustable criterion. Essentially, these criterion exist to make sure we are allowing people adequate time to complete interactions. Because we are providing different interactions within the notification, hiding the notifications automatically can prevent users from completing those interactions</li>
+		<li>2.2.1 Timing adjustable criterion. Essentially, this criterion exists to make sure we are allowing people adequate time to complete interactions. Because we are providing different interactions within the notification, hiding the notifications automatically can prevent users from completing those interactions</li>
 		<li>A way around this would be to add a button to dismiss the notification manually instead.</li>
 	</ul>
 </aside>
