@@ -108,7 +108,7 @@ Add to Cart
 <img src="screenshots/buttons-1.png" alt="Two buttons, the first one says 'Add to cart' and the second one says 'Added to cart' with a checkmark next to it.">
 <aside class="notes">
 	<ul>
-		<li>When a button's text is changed when it is activated.</li>
+		<li>When a button's text is changed when it is activated. [explain image]</li>
 		<li>A pattern that can be used in combination with other patterns, and I'd recommend it</li>
 </aside>
 </section>
@@ -118,7 +118,7 @@ Add to Cart
 <img src="screenshots/zoom-1.png" alt="Zoomtext being used on the product page, only the form and a bit of the description are visible.">
 <aside class="notes">
 	<ul>
-		<li>Good for users who use magnification, whether it be the default browser zoom, or special zooming software.</li>
+		<li>Good for users who use magnification, whether it be the default browser zoom, or special zooming software. [explain image]</li>
 		<li>Can only see a very small region of the screen, so it's good to have some indication of the state in the place they're currently looking at</li>
 </aside>
 </section>
@@ -153,8 +153,8 @@ Add to Cart
 </pre>
 <aside class="notes">
 	<ul>
-		<li>Moving onto implementation details, these buttons are typically implemented by using JS to change the text.</li>
-		<li>Screen readers handle changes the text of things inconsistently</li>
+		<li>Moving onto implementation details, this pattern is typically implemented by using JS to change the text.</li>
+		<li>In isolation, this isn't a recommended approach, because screen readers aren't that great at handling text changes consistently</li>
 </aside>
 </section>
 
@@ -355,7 +355,7 @@ Add to Cart
 </div>
 <aside class="notes">
 	<ul>
-		<li>A lot of the problems with toasts stem from the fact that by definition, focus isn't moved to it.<li>
+		<li>A lot of the problems with toasts stem from the fact that by definition, focus isn't moved to it.</li>
 		<li>Furthermore, toasts inherently have a problem shared with a lot of fixed position elements - Missable by zoom users.</li>
 		<li>Early on, we discussed 2.2.1 timing adjustable criterion and the problem with child elements, and this applies here. Trying to interact with a notification that disappears is as frustrating as your toast vanishing off your plate while you try to eat it.</li>
 	</ul>
