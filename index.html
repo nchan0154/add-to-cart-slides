@@ -209,7 +209,8 @@ Add to Cart
 </pre>
 <aside class="notes">
 	<ul>
-		<li>Sometimes, developers add the disabled attribute when the action is being processed to prevent double submission</li>
+		<li>Sometimes, developers might want to disable the 'Add to Cart' button while the action is being processed to prevent double submission</li>
+		<li>We have two options, the disabled attribute and the aria-disabled="true" with some additional code to ensure that functionality</li>
 		<li>This is definitely a case where the phrase 'it depends!' is very relevant</li>
 		<li>disabled may cause the focus to be lost</li>
 		<li>aria-disabled may not be any better, as what can be announced to screen readers will usually be something like 'Add To Cart, Unavailable',which can be confusing in an e-commerce context </li>
